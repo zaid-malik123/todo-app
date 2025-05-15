@@ -20,21 +20,10 @@ A simple and responsive Todo App built using **React + Vite** with features like
 
 ---
 
-## 📸 Screenshots
 
-> Add screenshots here if needed  
-> (You can take screenshots of your app and drag-drop in GitHub)
-
----
 
 ## 📂 Installation
 
-```bash
-# Clone the repository
-git clone https://github.com/your-username/your-repo-name
-
-# Go into the project directory
-cd your-repo-name
 
 # Install dependencies
 npm install
