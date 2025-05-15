@@ -1,62 +1,90 @@
-import React, { useState } from 'react'
-import { useForm } from "react-hook-form"
+import React, { useEffect, useState } from 'react';
+import { useForm } from "react-hook-form";
 
 function Todo() {
-  const [dataa, setDataa] = useState([])  
-  const { register, handleSubmit, reset } = useForm()
+  const [tasks, setTasks] = useState([]);
+  const { register, handleSubmit, reset } = useForm();
 
-  const formData = (data) => {
-    // Check if the task already exists in the list
-    const isTaskExist = dataa.some(task => task.toLowerCase() === data.task.toLowerCase());
+  // Load tasks from localStorage on mount
+  useEffect(() => {
+    const storedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    setTasks(storedTasks);
+  }, []);
 
-    if (isTaskExist) {
+  // Update localStorage when tasks change
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
+
+  const onSubmit = (data) => {
+    const isExist = tasks.some(task => task.text.toLowerCase() === data.task.toLowerCase());
+    if (isExist) {
       alert("This task already exists!");
     } else {
-      // Spread the existing array, then append the new task
-      setDataa(prev => [...prev, data.task]);
+      setTasks(prev => [...prev, { text: data.task, completed: false }]);
     }
-
-    // Clear the input field after submission
     reset();
-  }
+  };
 
-  const removeButton = (idx) => {
-    setDataa(prev => prev.filter((_, i) => i !== idx));
-  }
+  const deleteTask = (index) => {
+    setTasks(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const toggleTask = (index) => {
+    const updatedTasks = tasks.map((task, i) =>
+      i === index ? { ...task, completed: !task.completed } : task
+    );
+    setTasks(updatedTasks);
+  };
 
   return (
-    <div className='min-h-screen bg-gray-50 p-10 flex flex-col items-center'>
-      <h1 className='text-3xl font-bold mb-6'>Your Todo List</h1>
-      <form onSubmit={handleSubmit(formData)} className='flex gap-2 mb-8'>
-        <input
-          {...register("task")}
-          className='border rounded px-4 py-2 w-72 focus:outline-none'
-          placeholder='Enter your Task'
-        />
-        <button
-          type="submit"
-          className='bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition'
-        >
-          Add
-        </button>
-      </form>
+    <div className='min-h-screen bg-gradient-to-br from-blue-100 to-purple-200 p-6 flex flex-col items-center'>
+      <div className='w-full max-w-xl bg-white shadow-lg rounded-xl p-6'>
+        <h1 className='text-4xl font-bold text-center text-blue-700 mb-6'>My Todo List</h1>
 
-      <ul className='w-full max-w-md space-y-2'>
-        {dataa.map((val, idx) => (
-          <li 
-            key={idx}
-            className='flex justify-between items-center bg-white shadow p-3 rounded'
+        <form onSubmit={handleSubmit(onSubmit)} className='flex flex-col sm:flex-row gap-3 mb-6'>
+          <input
+            {...register("task")}
+            required
+            className='flex-1 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+            placeholder='Enter your task'
+          />
+          <button
+            type="submit"
+            className='bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition w-full sm:w-auto'
           >
-            <span className='text-gray-800'>{val}</span>
-            <i
-              onClick={() => removeButton(idx)}
-              className="ri-delete-bin-7-fill text-red-500 cursor-pointer"
-            />
-          </li>
-        ))}
-      </ul>
+            Add Task
+          </button>
+        </form>
+
+        <ul className='space-y-3'>
+          {tasks.length === 0 ? (
+            <p className='text-center text-gray-500'>No tasks added yet.</p>
+          ) : (
+            tasks.map((task, index) => (
+              <li key={index} className='flex justify-between items-center bg-gray-50 border rounded px-4 py-2 shadow-sm'>
+                <div className='flex items-center gap-3'>
+                  <input
+                    type='checkbox'
+                    checked={task.completed}
+                    onChange={() => toggleTask(index)}
+                    className='accent-blue-600 h-4 w-4'
+                  />
+                  <span className={`text-lg ${task.completed ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                    {task.text}
+                  </span>
+                </div>
+                <i
+                  onClick={() => deleteTask(index)}
+                  className="ri-delete-bin-7-fill text-red-500 text-xl cursor-pointer hover:text-red-600"
+                ></i>
+              </li>
+            ))
+          )}
+        </ul>
+      </div>
     </div>
-  )
+  );
 }
 
-export default Todo
+export default Todo;
